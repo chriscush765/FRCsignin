@@ -14,9 +14,8 @@
 <div class="container">
 
     <?php
-    if ($_POST['name'] == null) {
-        ?>
-        <h2>Forgot your ID? Enter your FULL NAME below!</h2>
+    if (!isset($_POST["name"])) {
+        echo('<h2>Forgot your ID? Enter your FULL NAME below!</h2>
         <h3>Case insensitive :)</h3>
         <br>
         <form name="input" action="forgot.php" method="post">
@@ -24,9 +23,8 @@
             <input type="submit" class="button" value="Submit" name="submit">
         </form>
             <br>
-    <button class="button" onclick="window.location.href='index.php'">Back</button>
+    <button class="button" onclick="window.location.href=\'index.php\'">Back</button> ');
 
-    <?
     }
     else {
 		include 'includes/config.php';
@@ -36,7 +34,7 @@
         // select the database once connected
 
         // get all users who are "logged in" (1 indicates logged in, 0 is logged out)
-        $result = mysqli_query($con, "SELECT id FROM students WHERE fullname = '$name'");
+        $result = mysqli_query($con, "SELECT ID FROM students WHERE NAME = '$name'");
         $row = mysqli_fetch_array($result);
 
         if ($row['id'] == null){

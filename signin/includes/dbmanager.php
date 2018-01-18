@@ -2,7 +2,7 @@
 
 include_once 'config.php';
 
-$con = mysqli_connect("localhost", $dbuser, $dbpass, $dbname);
+$con = new mysqli("localhost", $dbuser, $dbpass, $dbname);
 // Verify connection with database
     if (mysqli_connect_errno())
         fancydie('Couldn\'t connect to the database. Reason: ' . mysqli_connect_error());
@@ -53,7 +53,7 @@ function login($ID)
 
     if ($active) { //if user is signed in
         $_SESSION['loginerror'] = "alreadysignedin";
-        redirect("index.php");
+        redirect();
     } else {
 
 		//if user is signed out
@@ -61,7 +61,7 @@ function login($ID)
         if (!$result)
             fancydie('Could not set active to true, ' . mysqli_error($con));
 
-        $result = mysqli_query($con, "INSERT INTO logs (ID, NAME, DATEIN) VALUES ('$ID', '$name', now())");
+        $result = mysqli_query($con, "INSERT INTO LOGS (ID, NAME, DATEIN, DATEOUT) VALUES ('$ID', '$name', now(), '0000-00-00 00:00:00')");
         if (!$result)
             fancydie('Could not update logs, ' . mysqli_error($con));
 }
@@ -88,11 +88,11 @@ function logout($ID, $notime = false)
         if (!$result)
             fancydie('Could not set active to false, ' . mysqli_error($con));
 
-        $result = mysqli_query($con, "UPDATE logs SET DATEOUT = now() WHERE DATEOUT = '0000-00-00 00:00:00' AND ID = '$ID'");
+        $result = mysqli_query($con, "UPDATE LOGS SET DATEOUT = now() WHERE DATEOUT = '0000-00-00 00:00:00' AND ID = '$ID'");
         if (!$result)
             fancydie('Could not update logs, ' . mysqli_error($con));
         if(!$notime){
-        $result = mysqli_query($con, "SELECT DATEIN,DATEOUT FROM logs WHERE ID = '$ID' ORDER BY NUM desc");
+        $result = mysqli_query($con, "SELECT DATEIN,DATEOUT FROM LOGS WHERE ID = '$ID' ORDER BY LOGID desc");
         if (!$result)
             fancydie('Could not fetch log data, ' . mysqli_error($con));
 

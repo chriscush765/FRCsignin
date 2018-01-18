@@ -3,7 +3,7 @@ include '../includes/tools.php';
 
 //authentication stuff
 if($_SESSION['adminpass'] == null){
-    redirect('admin/login');
+    redirect('admin/login.php');
 }
 
 if (md5($_SESSION['adminpass']) != $adminpassword){

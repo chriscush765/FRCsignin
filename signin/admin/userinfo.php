@@ -2,26 +2,56 @@
 include_once '../includes/tools.php';
 
 //authentication stuff
-if($_SESSION['adminpass'] == null){
-    redirect('admin/login');
+if ($_SESSION['adminpass'] == null) {
+    redirect('admin/login.php');
 }
 
-if (md5($_SESSION['adminpass']) != $adminpassword){
+if (md5($_SESSION['adminpass']) != $adminpassword) {
     redirect('login.php?error=wp');
 }
 
-// Verify connection with database
-    if (mysqli_connect_errno()) {
-        fancydie("Couldn't connect to the database. Reason: " . mysqli_connect_error());
-    }
+if (isset($_POST["numlogs"]))
+    $numlogs = $_POST["numlogs"];
+else
+    $numlogs = "5"; //number of log files to fetch
 
-$user = urldecode($_GET['user']);
-$result = mysqli_query($con,"SELECT * FROM students WHERE fullname = '$user'"); 
-$row = mysqli_fetch_array($result);
-$ID = $row['id'];
-$active = $row['active'];
-$totaltime = $row['totaltime'];
-$name = $row['name'];
+
+$name = $_POST["user"];
+
+if (!isset($_POST["id"])) {
+    if ($stmt = $con->prepare("SELECT * FROM students WHERE NAME=?")) {
+        $stmt->bind_param("s", $name);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->fetch();
+        $stmt->close();
+    }
+    $ID = $result['ID'];
+    $active = $result['ACTIVE'];
+    $totaltime = $result['TOTALTIME'];
+} else {
+    $ID = $_POST['id'];
+    $active = $_POST['active'];
+    $totaltime = $_POST['totaltime'];
+}
+
+
+$datein = array();
+$dateout = array();
+
+if ($stmt = $con->prepare("SELECT DATEIN,DATEOUT FROM LOGS where ID = ? order by DATEIN desc limit ?")) {
+    $stmt->bind_param("ii", $ID, $numlogs);
+    if (!$stmt->execute())
+        fancydie(mysqli_error($con));
+    $stmt->bind_result($argdatein, $argdateout);
+    while ($stmt->fetch()) {
+        $datein[] = $argdatein;
+        $dateout[] = $argdateout;
+    }
+    $stmt->close();
+}
+
+$con->close();
 
 
 if (isset($_POST['action'])) {
@@ -32,17 +62,18 @@ if (isset($_POST['action'])) {
         case 'logout':
             signOut($ID);
             die();
-		case 'flogout':
+        case 'flogout':
             select();
             die;
         default:
-        	die();
+            die();
     }
 }
-    
+
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
@@ -50,49 +81,46 @@ if (isset($_POST['action'])) {
     <link rel="stylesheet" href="../css/style.css" media="screen" type="text/css"/>
 
     <link rel="shortcut icon" type="../image/png" href="/images/favicon.png"/>
-    		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script>
-    $(document).ready(function(){
-    $('button').click(function(){
-        var clickBtnValue = $(this).val();
-        var ajaxurl = 'userinfo.php',
-        data =  {'login': clickBtnValue};
-        $.post(ajaxurl, data, function (response) {
-            // Response div goes here.
-            alert("Action performed successfully.");
-    	  });
-		 });
-
-		});
-	</script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
 
     <title>MidKnight Inventors</title>
 </head>
 <body>
 <div class="container fade-in one">
-        <h2 class="fade-in two">User Information for <?php echo ucwords($user); ?></h2>
-		<h3>ID: <?php echo $ID; ?></h3>
-        <h3><?php echo ($active == 1 ? "Currently logged in" : "Currently not logged in");?></h3>   
-		<br>
-		<h2>Here are the last three sign-ins</h2>
-		<?php
-		
-		$result = mysqli_query($con,"SELECT datein,dateout FROM `logs` where id = '". $ID ."' order by datein desc limit 5"); 
+    <div class="mini red">
+        <h1><?php echo ucwords($name);?></h1>
+    </div>
+    <div class="mini white">
+        <h2>User Information</h2>
+        <h2>ID: <?php echo $ID; ?></h2>
+        <h2><?php echo($active == 1 ? "Currently logged in" : "Currently not logged in"); ?></h2>
+    </div>
+    <br>
+    <?php printf("<h2>Here are the last %s sign-ins</h2>", $numlogs);
+    foreach (array_combine($datein, $dateout) as $in => $out) {
+        $seconds = round(strtotime($out) - strtotime($in));
+        $sessiontime = sprintf('%02d:%02d:%02d', ($seconds / 3600), ($seconds / 60 % 60), $seconds % 60);
 
-    while($row = mysqli_fetch_array($result)){
-        $datein[] = $row[0];
-        
-        $dateout[] = $row[1];
+
+        echo("<div class=\"date\">");
+        echo("<div class='datetop'>" . date('n-j-Y', strtotime($in)) . "</div>");
+        echo($sessiontime . "</div>");
     }
-            
-    for($x = 0; $x < count($datein); $x++){
-        $sessiontime = strtotime($dateout[$x]) - strtotime($datein[$x]);
-        echo("<div class=\"longbutton\">". gmdate("H", $sessiontime) ." hours ".gmdate("i", $sessiontime)." minutes <br>". date('Y-n-j', strtotime($datein[$x])) ." - ".date('Y-n-j', strtotime($dateout[$x]))."</div>");
-    }
-		?>
-		
-        
+    ?>
+
+    <form action="userinfo.php" method="post">
+        <?php
+        printf('<input type="hidden" name="user" value="%s">', $name);
+        printf('<input type="hidden" name="id" value="%s">', $ID);
+        printf('<input type="hidden" name="active" value="%s">', $active);
+        printf('<input type="hidden" name="totaltime" value="%s">', $totaltime);
+        printf('<input type="text" autocomplete="off" pattern="^[0-9]*$" name="numlogs" placeholder="show %s entries"', $numlogs);
+        ?>
+        <br>
+        <input class="button" type="submit" value="Update">
+    </form>
+
     <button class="button fade-in five" onclick="window.location.href='index.php'">Back</button>
 
 </div>

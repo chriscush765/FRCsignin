@@ -1,6 +1,6 @@
 <?php
 if($_SESSION['pass'] == null) {
-    redirect('login');
+    redirect('login.php');
 }
 
 if (md5($_SESSION['pass']) != $adminpassword) {

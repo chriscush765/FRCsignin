@@ -1,11 +1,12 @@
 <?php
 include("includes/tools.php");
 
-if($_POST['pass'] != null){
+/*if($_POST['pass'] != null){
     $_SESSION['pass'] = $_POST['pass'];
     redirect("index");
     die();
 }
+*/
 
 ?>
 

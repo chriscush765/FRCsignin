@@ -3,18 +3,18 @@ include("../includes/tools.php");
 
 if($_POST['adminpass'] != null){
     $_SESSION['adminpass'] = $_POST['adminpass'];
-    redirect("admin/index");
+    redirect("admin/index.php");
 }
 
 if($_GET['a'] == "o"){ // o is for log Out
 	$_SESSION['adminpass'] = null;
-	redirect("index");
+	redirect();
 }
 
 if($_GET['a'] == "d"){ // d is for deactivate
 	$_SESSION['adminpass'] = null;
 	$_SESSION['pass'] = null;
-	redirect("login?a=d");
+	redirect("login.php?a=d");
 }
 
 ?>
@@ -37,9 +37,9 @@ if($_GET['a'] == "d"){ // d is for deactivate
 <div class="container">
 		<h1>Admin panel</h1>
         <h2>Authentication required</h2>
-        <?
+        <?php
         if($_GET['error'] == "wp")
-        echo('<h3 style="color: red">Incorrect Password</h3>');
+        echo("<h3 style=\"color: red\">Incorrect Password</h3>");
         $_SESSION['adminpass'] = null;
         ?>
         <form name="input" action="login.php" method="post">

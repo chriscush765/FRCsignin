@@ -1,6 +1,6 @@
 <?php
 session_start (); // open up a session with the user
-include 'includes/tools.php';
+include 'includes/config.php'; //using tools.php creates loop
 $error = $_COOKIE ['fancydie'];
 if ($error == null)
 	$error = "This page didn't recieve an error to display. Do you have cookies disabled?"; // errorception

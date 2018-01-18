@@ -23,7 +23,7 @@
     $con = mysqli_connect("localhost", $dbuser, $dbpass, $dbname);
 
     // get all users who are "logged in" (1 indicates logged in, 0 is logged out)
-    $result = mysqli_query($con, "SELECT fullname FROM students WHERE active = '1'");
+    $result = mysqli_query($con, "SELECT name FROM students WHERE ACTIVE = '1'");
 
     // create a table
     $counts = mysqli_num_rows($result); 

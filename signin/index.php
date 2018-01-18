@@ -1,7 +1,7 @@
 <?php
 session_start();
 include 'includes/tools.php';
-include 'includes/secure.php';
+//include 'includes/secure.php';
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -36,8 +36,8 @@ include 'includes/secure.php';
         	<input class="button" id="submit" type="submit" value="Log Out" name="logout">
 		</form>
 
-        <button class="button" onclick="window.location.href='list'">Who is online?</button>
-        <button class="button" onclick="window.location.href='forgot'">Forgot your ID?</button>
+        <button class="button" onclick="window.location.href='list.php'">Who is online?</button>
+        <button class="button" onclick="window.location.href='forgot.php'">Forgot your ID?</button>
 		
 		<button class="button" onclick="window.location.href='admin/'">Settings</button>
 
